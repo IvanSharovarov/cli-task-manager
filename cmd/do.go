@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/IvanSharovarov/cli-task-manager/db"
 	"github.com/spf13/cobra"
 	"strconv"
 )
 
-// doCmd represents the do command
 var doCmd = &cobra.Command{
 	Use:   "do",
 	Short: "Marks a task as complete",
@@ -20,7 +20,25 @@ var doCmd = &cobra.Command{
 				ids = append(ids, id)
 			}
 		}
-		fmt.Println(ids)
+		tasks, err := db.AllTasks()
+		if err != nil {
+			fmt.Println("Something went wrong:", err)
+			return
+		}
+
+		for _, id := range ids {
+			if id <= 0 || id > len(tasks) {
+				fmt.Println("Invalid task number:", id)
+				continue
+			}
+			task := tasks[id-1]
+			err := db.DeleteTask(task.Key)
+			if err != nil {
+				fmt.Printf("Failed to mark \"%d\" as completed. Error: %s\n", id, err)
+			} else {
+				fmt.Printf("Market \"%d\" as completed.\n", id)
+			}
+		}
 	},
 }
 
